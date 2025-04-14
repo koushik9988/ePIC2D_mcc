@@ -297,6 +297,7 @@ int main( int argc , char *argv[])
         std::string type = INIParser::getString(gridsSection, prefix + "type");
 
         GridParams grid_params;
+        RectangularGridParams grid_params1;
 
         if (type == "circular")
         {
@@ -307,22 +308,21 @@ int main( int argc , char *argv[])
             grid_params.electrode_rad   = INIParser::getDouble(gridsSection, prefix + "electrod_radius");
             grid_params.voltage         = (Const::eV / (Const::K_b * Const::EV_to_K)) * INIParser::getDouble(gridsSection, prefix + "electrode_voltage");
 
-            grids.push_back(Create_Grid(GridType::Circular, domain, grid_params));
+            grids.push_back(Create_Grid(GridType::Circular, domain, grid_params, grid_params1));
         }
-    /*
-    else if (type == "rectangle")
-    {
-        grid_params.rect_x_start    = INIParser::getInt(gridsSection, prefix + "x_start");
-        grid_params.rect_y_start    = INIParser::getInt(gridsSection, prefix + "y_start");
-        grid_params.rect_x_end      = INIParser::getInt(gridsSection, prefix + "x_end");
-        grid_params.rect_y_end      = INIParser::getInt(gridsSection, prefix + "y_end");
-        grid_params.voltage         = (Const::eV / (Const::K_b * Const::EV_to_K)) * INIParser::getDouble(gridsSection, prefix + "electrode_voltage");
-
-        grids.push_back(Create_Grid(GridType::Rectangle, domain, grid_params));
-    }*/
-    }
-
     
+        else if (type == "reactconduct")
+        {
+            grid_params1.min_x = INIParser::getInt(gridsSection, prefix + "min_x");
+            grid_params1.min_y = INIParser::getInt(gridsSection, prefix + "min_y");
+            grid_params1.max_x = INIParser::getInt(gridsSection, prefix + "max_x");
+            grid_params1.max_y = INIParser::getInt(gridsSection, prefix + "max_y");
+            grid_params1.voltage = (Const::eV / (Const::K_b * Const::EV_to_K)) * INIParser::getDouble(gridsSection, prefix + "grid_voltage");
+
+            grids.push_back(Create_Grid(GridType::ReactConductor, domain, grid_params, grid_params1));
+        }
+
+    }
     /*std::vector<Grid*> grids;
 
     for (const auto& [section_name, params] : iniData) 
@@ -380,7 +380,7 @@ int main( int argc , char *argv[])
     //initializing the species by creating instances if Init class
     for(Species &sp : species_list)
     {
-        Init init(sp,domain);
+        Init init(sp,domain,grids);
     } 
     
     FieldSolve fieldsolver(domain,grids);

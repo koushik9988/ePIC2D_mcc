@@ -8,7 +8,7 @@
 class Electrode; // Forward declaration of Electrode class
 class Domain;
 
-enum class GridType { Custom, Circular, Line, ReactConductor };
+enum class GridType { Custom, Circular, Line, ReactConductor};
 
 class Grid
 {
@@ -34,19 +34,35 @@ class CustomGrid : public Grid
 
 class CircularGrid : public Grid
 {
-private:
+    private:
     int center_x, center_y;
     int num_electrodes;
     double voltage;
     double electrode_rad;
     double grid_rad;
 
-public:
+    public:
     CircularGrid(Domain& domain, int center_x, int center_y, int num_electrodes,
                  double voltage, double electrode_rad, double grid_rad);
     bool IsGrid(double x, double y) override;
     void initialize() override;
 };
+
+
+
+class ReactConductorGrid : public Grid
+{
+    private:
+    int min_x, max_x, min_y, max_y;
+    double voltage;
+
+    public:
+    ReactConductorGrid(int min_x, int max_x, int min_y, int max_y, double voltage, Domain& domain);
+    bool IsGrid(double x, double y) override;
+    void initialize() override;
+};
+
+
 
 struct GridParams
 {
@@ -60,12 +76,14 @@ struct GridParams
 
 struct RectangularGridParams
 {
-    int x1, y1, x2, y2, x3, y3, x4, y4;
-    int resolution;
-    double charge;
+    int min_x;
+    int max_x;
+    int min_y;
+    int max_y;
+    double voltage;
 };
 
-Grid* Create_Grid(GridType type, Domain& domain, const GridParams& params);
+Grid* Create_Grid(GridType type, Domain& domain, const GridParams& params, const RectangularGridParams &rparam);
 
 
 #endif // GRID_H

@@ -399,8 +399,8 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list)
     int num_particles = species_list[1].part_list.size();
     for (int i = 0; i < num_particles; ++i)
     {
-        x.push_back(species_list[1].part_list[i].pos[0]);
-        vx.push_back(species_list[1].part_list[i].pos[1]);
+        x.push_back(species_list[0].part_list[i].pos[0]);
+        vx.push_back(species_list[0].part_list[i].pos[1]);
     }
 
     plt::ion();
@@ -415,6 +415,8 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list)
     plt::scatter(x, vx, marker_size, scatter_keywords1);
     plt::xlabel("x");
     plt::ylabel("vx");
+    plt::xlim(0, domain.nx);  // Set x-axis limits from 0 to 6
+    plt::ylim(0, domain.ny);
 
     std::map<std::string, std::string> legend_keywords;
     legend_keywords["loc"] = "upper right";

@@ -1,6 +1,8 @@
 #include "init.h"
 
-Init::Init(Species &species, Domain &domain) : species(species), domain(domain) {
+Init::Init(Species &species, Domain &domain, std::vector<Grid*> &grids):
+species(species), domain(domain), grids(grids)
+{
     auto initialization = INIParser::loadtypeextract(species.initialization);
     auto init_type = initialization.first;
     int n = initialization.second;
@@ -22,55 +24,81 @@ Init::Init(Species &species, Domain &domain) : species(species), domain(domain) 
         double x = 0, y = 0;
         double vx = 0, vy = 0, vz = 0;
 
-        if (init_type == "random")
+        bool particle_on_grid = false;
+    
+        while (true) // We keep trying until we get a valid position
         {
-            x = domain.x0 + domain.Lx * rnd();
-            y = domain.y0 + domain.Ly * rnd();
-        } 
-        else if (init_type == "uniform")
-        {
-            int nx = sqrt(species.numparticle);
-            int px = p % nx;
-            int py = p / nx;
-            x = domain.x0 + px * (domain.Ly / (nx - 1));
-            y = domain.y0 + py * (domain.Ly / (nx - 1));
-        } 
-        else if (init_type == "sin")
-        {
-            x = domain.x0 + p * (domain.Lx / (species.numparticle - 1));
-            y = domain.y0 + p * (domain.Ly / (species.numparticle - 1));
-            double kx = 2 * Const::PI * n / domain.Lx;
-            double ky = 2 * Const::PI * n / domain.Ly;
-            x += sin(kx * x);
-            y += sin(ky * y);
-        } 
-        else if (init_type == "cos") 
-        {
-            x = domain.x0 + p * (domain.Lx / (species.numparticle - 1));
-            y = domain.y0 + p * (domain.Ly / (species.numparticle - 1));
-            double kx = 2 * Const::PI * n / domain.Lx;
-            double ky = 2 * Const::PI * n / domain.Ly;
-            x += cos(kx * x);
-            y += cos(ky * y);
-        } 
-        else if (init_type == "gaussian")
-        {
-            x = gaussian_x(gen);
-            y = gaussian_y(gen);
+            // Generate particle position based on the initialization type
+            if (init_type == "random")         
+            {             
+                x = domain.x0 + domain.Lx * rnd();             
+                y = domain.y0 + domain.Ly * rnd();         
+            }          
+            else if (init_type == "uniform")         
+            {             
+                int nx = sqrt(species.numparticle);             
+                int px = p % nx;             
+                int py = p / nx;             
+                x = domain.x0 + px * (domain.Lx / (nx - 1));  // Avoid grid boundary by adjusting range           
+                y = domain.y0 + py * (domain.Ly / (nx - 1));  // Avoid grid boundary by adjusting range         
+            }          
+
+            else if (init_type == "sin")         
+            {             
+                x = domain.x0 + p * (domain.Lx / (species.numparticle - 1));             
+                y = domain.y0 + p * (domain.Ly / (species.numparticle - 1));             
+                double kx = 2 * Const::PI * n / domain.Lx;             
+                double ky = 2 * Const::PI * n / domain.Ly;             
+                x += sin(kx * x);             
+                y += sin(ky * y);         
+            }          
+            else if (init_type == "cos")          
+            {             
+                x = domain.x0 + p * (domain.Lx / (species.numparticle - 1));             
+                y = domain.y0 + p * (domain.Ly / (species.numparticle - 1));             
+                double kx = 2 * Const::PI * n / domain.Lx;             
+                double ky = 2 * Const::PI * n / domain.Ly;             
+                x += cos(kx * x);             
+                y += cos(ky * y);         
+            }          
+
+            else if (init_type == "gaussian")         
+            {             
+                x = gaussian_x(gen);             
+                y = gaussian_y(gen);         
+            }                  
+
+            // Check if the position (x, y) is outside all the grids
+            particle_on_grid = false;  // Start with assuming the particle is not inside any grid
+            for (auto grid : grids)
+            {
+                if (grid->IsGrid(x, y)) // If the position is inside any grid
+                {
+                    particle_on_grid = true;  // Mark it as inside a grid
+                    break;  // Exit the loop early
+                }
+            }
+
+            // If the particle is not inside any grid, we can accept it
+            if (!particle_on_grid) 
+            {
+                // Sample the velocity
+                vx = Init::SampleVel(species) + species.vsx * domain.vel_norm;
+                vy = Init::SampleVel(species) + species.vsy * domain.vel_norm;
+                vz = 0;  // Init::SampleVel(species);  // You might want vz to be set if needed
+
+                vx /= domain.vel_norm;
+                vy /= domain.vel_norm;
+                vz /= domain.vel_norm;
+
+                // Add the particle to the species
+                species.AddParticle(Particle(x, y, vx, vy, vz));
+                break;  // Exit the loop since we've successfully initialized the particle
+            }
+        // Otherwise, the loop will continue and try generating a new position
         }
-        
-        vx = Init::SampleVel(species) + species.vsx * domain.vel_norm;
-        vy = Init::SampleVel(species) + species.vsy * domain.vel_norm;
-        vz = 0;//Init::SampleVel(species);
-
-        vx /= domain.vel_norm;
-        vy /= domain.vel_norm;
-        vz /= domain.vel_norm;
-
-        //display::print("Particle Position: ", x, ":",y);
-
-        species.AddParticle(Particle(x, y, vx, vy, vz));
     }
+
 }
 
 double Init::SampleVel(Species &species)
@@ -83,78 +111,4 @@ double Init::SampleVel(Species &species, double temp)
 {
     double v_th = sqrt(2 * Const::K_b * temp * Const::EV_to_K / species.mass);
     return v_th * sqrt(2) * (rnd() + rnd() + rnd() - 1.5);
-}
-
-
-// Function to inject particles
-void inject(Species &species, Domain &domain, int numParticles)
-{
-    // Unused variable, removed to clear warning
-    // double v_th = sqrt(2 * Const::K_b * domain.tempE * Const::EV_to_K / Const::ME);
-
-    // Particle injection from the left side
-    for (int p = 0; p < numParticles; p++)
-    {
-        
-        double x = domain.x0+1;
-        double y = domain.unirand(8,24);
-        //double y = (rnd())*domain.Ly;
-        double vx = Init::SampleVel(species);
-        double vy = Init::SampleVel(species);
-        double vz = 0;
-        vx /= domain.vel_norm;
-        vy /= domain.vel_norm;
-        vz /= domain.vel_norm;
-        species.AddParticle(Particle(x, y, vx, vy,vz));
-    }
-
-    // Particle injection from the right side
-    for (int p = 0; p < numParticles; p++)
-    {
-        double x = domain.Lx -1;
-        double y = domain.unirand(8,24);
-    
-        //double y = (rnd())*domain.Ly;
-
-        double vx = Init::SampleVel(species);
-        double vy = Init::SampleVel(species);
-        double vz = 0;
-        vx /= domain.vel_norm;
-        vy /= domain.vel_norm;
-        vx /= domain.vel_norm;
-        species.AddParticle(Particle(x, y, vx, vy,vz));
-    }
-
-    // Particle injection from the bottom side
-    for (int p = 0; p < numParticles; p++)
-    {   
-        double x = domain.unirand(8,24);
-        
-        //double x = (rnd())*domain.Lx;
-        double y = 0+1;
-
-        double vx = Init::SampleVel(species);
-        double vy = Init::SampleVel(species);
-        double vz = 0;
-        vx /= domain.vel_norm;
-        vy /= domain.vel_norm;
-        vz /= domain.vel_norm;
-        species.AddParticle(Particle(x, y, vx, vy,vz));
-    }
-
-    // Particle injection from the top side
-    for (int p = 0; p < numParticles; p++)
-    {
-        double x = domain.unirand(8,24);
-        
-        //double x = (rnd())*domain.Lx;
-        double y = domain.Lx - 1;
-        double vx = Init::SampleVel(species);
-        double vy = Init::SampleVel(species);
-        double vz = 0;
-        vx /= domain.vel_norm;
-        vy /= domain.vel_norm;
-        vz /= domain.vel_norm;
-        species.AddParticle(Particle(x, y, vx, vy,vz));
-    }
 }

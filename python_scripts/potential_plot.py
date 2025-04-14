@@ -31,8 +31,8 @@ def animate(j):
     i = j*write_interval*10
     #i = NUM_TS
     ax.clear()
-    #pot = f[f"fielddata/pot/{i}"][:]
-    pot = f[f"fielddata/den_electron/{i}"][:]
+    pot = f[f"fielddata/pot/{i}"][:]
+    #pot = f[f"fielddata/den_electron/{i}"][:]
     #pot = f[f"fielddata/den_ion/{i}"][:]
     #pot = f[f"fielddata/efieldy/{i}"][:]
     pot = np.transpose(pot)

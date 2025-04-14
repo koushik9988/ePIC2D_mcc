@@ -10,16 +10,18 @@
 #include "output.h"
 #include "slap.h"
 #include "iniparser.h"
+#include "grid.h"
 
 class Domain;
 class Species;
+class Grid;
 
 class Init 
 {
 public:
     //in the constructor we pass Species and Domain class instances to access the species and domain class
     //memebr variable and methods 
-    Init(Species &species, Domain &domain);
+    Init(Species &species, Domain &domain, std::vector<Grid*> &grids);
     //void inject(Species &species, int numParticles);
     static double SampleVel(Species &species);
     static double SampleVel(Species &species, double temp);
@@ -29,6 +31,7 @@ public:
 private:
     Species &species;
     Domain &domain;
+    std::vector<Grid*> &grids;
     //double* SampleVel(Species &species);
 };
 

@@ -23,7 +23,7 @@ bool CustomGrid::IsGrid(double x, double y)
 
 void CustomGrid::initialize()
 {
-    // Implement initialization if needed, e.g., add specific electrodes
+    // Implement initialization if needed
 }
 
 CircularGrid::CircularGrid(Domain& domain, int center_x, int center_y, int num_electrodes,
@@ -56,18 +56,47 @@ void CircularGrid::initialize()
     }
 }
 
-Grid* Create_Grid(GridType type, Domain& domain, const GridParams& params)
+
+ReactConductorGrid::ReactConductorGrid(int min_x, int max_x, int min_y, int max_y, double voltage, Domain& domain)
+    : min_x(min_x), max_x(max_x), min_y(min_y), max_y(max_y), voltage(voltage), Grid(domain) {}
+
+bool ReactConductorGrid::IsGrid(double x, double y)
+{
+    return (x >= min_x && x <= max_x && y >= min_y && y <= max_y);
+}
+
+void ReactConductorGrid::initialize()
+{
+    int min_i = static_cast<int>(domain.XtoL(min_x));
+    int max_i = static_cast<int>(domain.XtoL(max_x));
+    int min_j = static_cast<int>(domain.YtoL(min_y));
+    int max_j = static_cast<int>(domain.YtoL(max_y));
+
+    for (int i = min_i; i <= max_i; ++i)
+    {
+        for (int j = min_j; j <= max_j; ++j)
+        {
+            if (i == min_i || i == max_i || j == min_j || j == max_j)
+            {
+                domain.rho(i, j) = voltage;
+            }
+        }
+    }
+}
+
+
+Grid* Create_Grid(GridType type, Domain& domain, const GridParams& params, const RectangularGridParams &rparam)
 {
     switch (type)
     {
         case GridType::Custom:
-            return new CustomGrid(domain);
+        return new CustomGrid(domain);
         case GridType::Circular:
-            return new CircularGrid(domain, params.grid_centerx, params.grid_centery,
-                                   params.num_electrodes, params.voltage,
-                                   params.electrode_rad, params.grid_rad);
+        return new CircularGrid(domain, params.grid_centerx, params.grid_centery,params.num_electrodes,
+            params.voltage,params.electrode_rad, params.grid_rad);
         case GridType::Line:
         case GridType::ReactConductor:
+        return new ReactConductorGrid(rparam.min_x, rparam.max_x, rparam.min_y, rparam.max_y, rparam.voltage, domain);
             return nullptr; // Not implemented yet
         default:
             return nullptr; // Handle unknown case
