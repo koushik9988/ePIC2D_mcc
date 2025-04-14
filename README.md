@@ -1,9 +1,8 @@
 # Electrostatic 1D Particle-in-Cell (PIC) Code
 
-This repository contains an electrostatic 1D Particle-in-Cell (PIC) code developed for simulating plasma systems. The code is capable of simulating basic plasma phenomena.
+This repository contains an electrostatic 2D-3V Particle-in-Cell (PIC) code. The code is in development stage and README incomplete.
 
-![dispersion](https://github.com/koushik9988/particle-in-cell/assets/55924787/5d278d78-2755-4293-bf18-4f8a09789b8c)
-![pp_3000](https://github.com/koushik9988/particle-in-cell/assets/55924787/6c7a7619-b5cc-4f27-910f-9dcfbcad2ddb)
+
 
 
 ## Requirements
