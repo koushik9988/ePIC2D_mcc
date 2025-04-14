@@ -1,7 +1,0 @@
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/ePIC++.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/test_solvers.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/run_tests.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/clean-all.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/test.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/edit_cache.dir
-/home/kaushik/Documents/Codes/PIC/ePIC2D_mcc/build/CMakeFiles/rebuild_cache.dir
