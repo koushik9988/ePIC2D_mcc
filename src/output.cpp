@@ -346,7 +346,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     double potential_energy_value = 0.0;
     vec<double> total_ke_components(3);
 
-    if (domain.bc == "pbc" || domain.bc == "reflective")
+    if (flags.ke_components == 1 || flags.total_energy == 1)
     {
         for (Species& sp : species_list)
         {
@@ -383,7 +383,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     }
 
     std::cout << std::endl;
-    
+
     plt::ion();
 
     // Phase Space Plot (x vs vx)
@@ -450,7 +450,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     }
 
     // KE Components Plot
-    if (flags.ke_components == 1 && (domain.bc == "pbc" || domain.bc == "reflective"))
+    if (flags.ke_components == 1)
     {
         plt::figure(3);
         plt::clf();
@@ -464,7 +464,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     }
 
     // Total Energy Plot
-    if (flags.total_energy == 1 && (domain.bc == "pbc" || domain.bc == "reflective"))
+    if (flags.total_energy == 1)
     {
         plt::figure(4);
         plt::clf();
