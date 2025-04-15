@@ -403,7 +403,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         for (int i = 0; i < N; ++i)
         {
             x.push_back(species_list[flags.species_index].part_list[i].pos[0]);
-            vx.push_back(species_list[flags.species_index].part_list[i].pos[1]);
+            vx.push_back(species_list[flags.species_index].part_list[i].vel[0]);
         }
 
         plt::figure(1);
@@ -411,8 +411,8 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         plt::scatter(x, vx, 1.0);
         plt::xlabel("x");
         plt::ylabel("vx");
-        plt::xlim(0, domain.nx);
-        plt::ylim(0, domain.ny);
+        //plt::xlim(0, domain.nx);
+        //plt::ylim(0, domain.ny);
     }
 
     // Config Space Plot (x vs y)

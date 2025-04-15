@@ -67,7 +67,7 @@ def animate(i):
 
    
     ax1.clear()
-    ax1.scatter(y, vy, marker='.', color='b', alpha=1.0, s=11, label=f"{particle_type} config space")
+    ax1.scatter(x, y, marker='.', color='b', alpha=1.0, s=11, label=f"{particle_type} config space")
     ax1.set_xlabel('$x$')
     ax1.set_ylabel('$v$')
     ax1.legend(loc='upper right', framealpha=0.5)

@@ -28,14 +28,14 @@ DATA_TS_PHASE = int(NUM_TS / write_interval) + 1
 fig, ax = plt.subplots(figsize=(10, 8), dpi=100)
 
 def animate(j):
-    i = j*write_interval*10
+    i = j*write_interval*5
     #i = NUM_TS
     ax.clear()
     pot = f[f"fielddata/pot/{i}"][:]
     #pot = f[f"fielddata/den_electron/{i}"][:]
     #pot = f[f"fielddata/den_ion/{i}"][:]
     #pot = f[f"fielddata/efieldy/{i}"][:]
-    pot = np.transpose(pot)
+    #pot = np.transpose(pot)
     cax = ax.imshow(pot, origin='lower', interpolation='bilinear', cmap='coolwarm')
     ax.set_title(f'Ion density at Timestep {i}')
     #fig.colorbar(cax, ax=ax, orientation='vertical')

@@ -447,7 +447,7 @@ int main( int argc , char *argv[])
             sp.Push_species_serial(1,grids);
 		}
 
-        //testcoll.handle_collisions(species_list[0],species_list[1]);
+        testcoll.handle_collisions(species_list[0],species_list[1]);
         //testcoll.handle_collisions(species_list[2],species_list[1]);
 
         if(ts%write_diagnostics == 0)

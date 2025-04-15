@@ -94,7 +94,7 @@ bool FieldSolve::gssolver()
     for(int i = 0; i < ny; i++)
     {
         domain.phi(0,i) = 0; 
-        domain.phi(nx-1,i) = 0*(Const::eV/(Const::K_b*Const::EV_to_K)); // Left/right, adjust units if needed
+        domain.phi(nx-1,i) = 100*(Const::eV/(Const::K_b*Const::EV_to_K)); // Left/right, adjust units if needed
     }
 
     for (auto grid : grids)
