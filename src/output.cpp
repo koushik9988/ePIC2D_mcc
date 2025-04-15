@@ -353,25 +353,34 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
             vec<double> ke = sp.Compute_KE(norm_species);
             total_ke_components += ke;
             total_kinetic_energy += ke(0) + ke(1) + ke(2);
-            std::cout << " KE_" << std::setw(4) << sp.name << ": " << std::fixed << std::setprecision(precision) << ke(0) + ke(1) + ke(2);
+            if(domain.bc == "pbc")
+            {
+                std::cout << " KE_" << std::setw(4) << sp.name << ": " << std::fixed << std::setprecision(precision) << ke(0) + ke(1) + ke(2);
+            }
+            
         }
 
         potential_energy_value = domain.Compute_PE(norm_species);
+        
         std::cout << " potential energy: " << std::fixed << std::setprecision(precision) << potential_energy_value;
         std::cout << " total_energy: " << std::fixed << std::setprecision(precision) << total_kinetic_energy + potential_energy_value;
-
+        
+        
         vec<double> total_momentum(3);
         for (Species& sp : species_list)
         {
             total_momentum += sp.Compute_Momentum(norm_species);
         }
-            
-        std::cout << " p_x: " << std::fixed << std::setprecision(precision) << total_momentum(0);
-        std::cout << " p_y: " << std::fixed << std::setprecision(precision) << total_momentum(1);
-        std::cout << " p_z: " << std::fixed << std::setprecision(precision) << total_momentum(2);
-        std::cout << " p: " << std::fixed << std::setprecision(precision) 
+        
+        if(domain.bc == "pbc")
+        {
+            std::cout << " p_x: " << std::fixed << std::setprecision(precision) << total_momentum(0);
+            std::cout << " p_y: " << std::fixed << std::setprecision(precision) << total_momentum(1);
+            std::cout << " p_z: " << std::fixed << std::setprecision(precision) << total_momentum(2);
+            std::cout << " p: " << std::fixed << std::setprecision(precision) 
         << sqrt(total_momentum(0)*total_momentum(0) + total_momentum(1)*total_momentum(1) + total_momentum(2)*total_momentum(2));
-
+        }
+        
         // Energy history store
         time_steps.push_back(static_cast<double>(ts));
         kinetic_energy.push_back(total_kinetic_energy);
