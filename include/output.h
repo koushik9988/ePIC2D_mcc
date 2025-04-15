@@ -25,6 +25,18 @@ using namespace H5;
 class Domain;
 class Species;
 
+
+struct PlotFlags 
+{
+    int phase_space;         // 1 = plot phase space (x vs vx), 0 = off
+    int config_space;        // 1 = plot config space (x vs y), 0 = off
+    int electric_field;      // 1 = plot electric field quiver, 0 = off
+    int ke_components;       // 1 = plot kinetic energy components, 0 = off
+    int total_energy;        // 1 = plot total energy plot, 0 = off
+    int species_index;       // species index for phase/config plots
+};
+
+
 class Output 
 {
     public:
@@ -38,7 +50,7 @@ class Output
     void write_den_data(int ts,  Species& species);
     void write_field_data(int ts);
 
-    void diagnostics(int ts,std::vector<Species> &species_list);
+    void diagnostics(int ts,std::vector<Species> &species_list, const PlotFlags &flags);
     int precision;
     
 

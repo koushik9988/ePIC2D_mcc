@@ -315,56 +315,45 @@ void Output::storeKE_to_matrix(int ts, std::vector<Species> &species_list)
 }
 
 
-void Output::diagnostics(int ts, std::vector<Species> &species_list)
-{   
+void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotFlags &flags)
+{
     vec<double> phivec = flatten(domain.phi);
     double max_phi = phivec(0);
 
-    auto norm_species = species_list[0];
-    
-    if(domain.SolverType == "hybrid" || domain.SolverType == "gshybrid")
-    {
-        auto norm_species = species_list[0];
-    }
-    else
-    {
-        auto norm_species = (domain.normscheme == 2 || domain.normscheme == 4) ? species_list[1] : species_list[0];
-    }
-    
-    for(int i = 0; i < int(domain.nx * domain.ny); i++)
+    Species& norm_species = (domain.SolverType == "hybrid" || domain.SolverType == "gshybrid") ? 
+    species_list[0]:((domain.normscheme == 2 || domain.normscheme == 4) ? species_list[1] : species_list[0]);
+
+    for (int i = 0; i < int(domain.nx * domain.ny); i++)
     {
         if (phivec(i) > max_phi)
         {
             max_phi = phivec(i);
         }
     }
-  
-    std::cout << "TS: " << ts << "\t" << "norm:" << domain.error << " delta_phi: " << std::fixed << std::setprecision(2) << (max_phi - phivec(0));
-    
-    if(domain.bc == "open")
+        
+
+    std::cout << "TS: " << ts << "\t"<< "norm: " << domain.error << " delta_phi: " << std::fixed << std::setprecision(2) << (max_phi - phivec(0));
+
+    if (domain.bc == "open")
     {
         for (Species& sp : species_list)
         {
             std::cout << " n_" << std::setw(4) << sp.name << ":" << sp.part_list.size();
-        }
+        }   
     }
-    
+
     double total_kinetic_energy = 0.0;
     double potential_energy_value = 0.0;
-    vec<double> ke(3);
-    vec<double> total_ke_components(3);  // Sum KE components across species
+    vec<double> total_ke_components(3);
 
-    if(domain.bc == "pbc" || domain.bc == "reflective")
+    if (domain.bc == "pbc" || domain.bc == "reflective")
     {
         for (Species& sp : species_list)
         {
-            ke = sp.Compute_KE(norm_species);  // KE vector [x, y, z]
-            total_ke_components(0) += ke(0);   // Sum KE_x
-            total_ke_components(1) += ke(1);   // Sum KE_y
-            total_ke_components(2) += ke(2);   // Sum KE_z
-            double ke_total = ke(0) + ke(1) + ke(2);
-            total_kinetic_energy += ke_total;
-            std::cout << " KE_" << std::setw(4) << sp.name << ": " << std::fixed << std::setprecision(precision) << ke_total;
+            vec<double> ke = sp.Compute_KE(norm_species);
+            total_ke_components += ke;
+            total_kinetic_energy += ke(0) + ke(1) + ke(2);
+            std::cout << " KE_" << std::setw(4) << sp.name << ": " << std::fixed << std::setprecision(precision) << ke(0) + ke(1) + ke(2);
         }
 
         potential_energy_value = domain.Compute_PE(norm_species);
@@ -376,102 +365,112 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list)
         {
             total_momentum += sp.Compute_Momentum(norm_species);
         }
+            
         std::cout << " p_x: " << std::fixed << std::setprecision(precision) << total_momentum(0);
         std::cout << " p_y: " << std::fixed << std::setprecision(precision) << total_momentum(1);
         std::cout << " p_z: " << std::fixed << std::setprecision(precision) << total_momentum(2);
-        std::cout << " p: " << std::fixed << std::setprecision(precision) << sqrt(total_momentum(2)*total_momentum(2) + total_momentum(1)*total_momentum(1) + total_momentum(0)*total_momentum(0));
+        std::cout << " p: " << std::fixed << std::setprecision(precision) 
+        << sqrt(total_momentum(0)*total_momentum(0) + total_momentum(1)*total_momentum(1) + total_momentum(2)*total_momentum(2));
 
-        // Store energies in vectors
+        // Energy history store
         time_steps.push_back(static_cast<double>(ts));
         kinetic_energy.push_back(total_kinetic_energy);
         potential_energy.push_back(potential_energy_value);
         total_energy.push_back(total_kinetic_energy + potential_energy_value);
-        Ke_x.push_back(total_ke_components(0));  // Total KE_x across species
-        Ke_y.push_back(total_ke_components(1));  // Total KE_y across species
-        Ke_z.push_back(total_ke_components(2));  // Total KE_z across species
+        Ke_x.push_back(total_ke_components(0));
+        Ke_y.push_back(total_ke_components(1));
+        Ke_z.push_back(total_ke_components(2));
     }
-    
+
     std::cout << std::endl;
-
-    // Particle phase space plot (unchanged)
-    std::vector<double> x;
-    std::vector<double> vx;
-    int num_particles = species_list[1].part_list.size();
-    for (int i = 0; i < num_particles; ++i)
-    {
-        x.push_back(species_list[0].part_list[i].pos[0]);
-        vx.push_back(species_list[0].part_list[i].pos[1]);
-    }
-
+    
     plt::ion();
 
-    double marker_size = 1.0;
-    std::map<std::string, std::string> scatter_keywords1;
-    scatter_keywords1["label"] = species_list[0].name;
-    scatter_keywords1["color"] = "black";
-
-    plt::figure(1);
-    plt::clf();
-    plt::scatter(x, vx, marker_size, scatter_keywords1);
-    plt::xlabel("x");
-    plt::ylabel("vx");
-    plt::xlim(0, domain.nx);  // Set x-axis limits from 0 to 6
-    plt::ylim(0, domain.ny);
-
-    std::map<std::string, std::string> legend_keywords;
-    legend_keywords["loc"] = "upper right";
-    plt::legend(legend_keywords);
-
-    // Quiver plot (unchanged)
-    std::vector<double> X, Y, U, V;
-    int nx = domain.nx, ny = domain.ny;
-    for (int i = 0; i < nx; i++)
+    // Phase Space Plot (x vs vx)
+    if (flags.phase_space == 1 && flags.species_index < species_list.size())
     {
-        for (int j = 0; j < ny; j++)
+        std::vector<double> x, vx;
+        int N = species_list[flags.species_index].part_list.size();
+        for (int i = 0; i < N; ++i)
         {
-            X.push_back(i * domain.dx);
-            Y.push_back(j * domain.dy);
-            U.push_back(domain.efx(i, j));
-            V.push_back(domain.efy(i, j));
+            x.push_back(species_list[flags.species_index].part_list[i].pos[0]);
+            vx.push_back(species_list[flags.species_index].part_list[i].pos[1]);
         }
+
+        plt::figure(1);
+        plt::clf();
+        plt::scatter(x, vx, 1.0);
+        plt::xlabel("x");
+        plt::ylabel("vx");
+        plt::xlim(0, domain.nx);
+        plt::ylim(0, domain.ny);
     }
 
-    plt::figure(2);
-    plt::clf();
-    plt::quiver(X, Y, U, V);
-    plt::title("Electric Field");
-    plt::xlabel("x");
-    plt::ylabel("y");
+    // Config Space Plot (x vs y)
+    if (flags.config_space == 1 && flags.species_index < species_list.size())
+    {
+        std::vector<double> x, y;
+        int N = species_list[flags.species_index].part_list.size();
+        for (int i = 0; i < N; ++i)
+        {
+            x.push_back(species_list[flags.species_index].part_list[i].pos[0]);
+            y.push_back(species_list[flags.species_index].part_list[i].pos[1]);
+        }
 
-    std::map<std::string, double> quiver_keywords;
-    quiver_keywords["scale"] = 50.0;
+        plt::figure(1);
+        plt::clf();
+        plt::scatter(x, y, 1.0);
+        plt::xlabel("x");
+        plt::ylabel("y");
+        plt::xlim(0, domain.nx);
+        plt::ylim(0, domain.ny);
+    }
 
-    // Plot KE components (total across species)
-    if(domain.bc == "pbc" || domain.bc == "reflective")
+    // Electric Field Plot
+    if (flags.electric_field == 1)
+    {
+        std::vector<double> X, Y, U, V;
+        for (int i = 0; i < domain.nx; i++)
+        {
+            for (int j = 0; j < domain.ny; j++)
+            {
+                X.push_back(i * domain.dx);
+                Y.push_back(j * domain.dy);
+                U.push_back(domain.efx(i, j));
+                V.push_back(domain.efy(i, j));
+            }
+        }
+
+        plt::figure(2);
+        plt::clf();
+        plt::quiver(X, Y, U, V);
+        plt::title("Electric Field");
+        plt::xlabel("x");
+        plt::ylabel("y");
+    }
+
+    // KE Components Plot
+    if (flags.ke_components == 1 && (domain.bc == "pbc" || domain.bc == "reflective"))
     {
         plt::figure(3);
         plt::clf();
-
         plt::plot(time_steps, Ke_x, {{"label", "KE_x"}, {"color", "blue"}});
         plt::plot(time_steps, Ke_y, {{"label", "KE_y"}, {"color", "red"}});
         plt::plot(time_steps, Ke_z, {{"label", "KE_z"}, {"color", "green"}});
-
         plt::title("Kinetic Energy Components vs Time");
         plt::xlabel("Time Step");
         plt::ylabel("Kinetic Energy component");
         plt::legend({{"loc", "upper right"}});
     }
 
-    // Total KE, PE, and total energy plot
-    if(domain.bc == "pbc" || domain.bc == "reflective")
+    // Total Energy Plot
+    if (flags.total_energy == 1 && (domain.bc == "pbc" || domain.bc == "reflective"))
     {
         plt::figure(4);
         plt::clf();
-
         plt::plot(time_steps, kinetic_energy, {{"label", "Total Kinetic Energy"}, {"color", "blue"}});
         plt::plot(time_steps, potential_energy, {{"label", "Potential Energy"}, {"color", "red"}});
         plt::plot(time_steps, total_energy, {{"label", "Total Energy"}, {"color", "green"}});
-
         plt::title("Total Energy vs Time");
         plt::xlabel("Time Step");
         plt::ylabel("Energy");
@@ -479,5 +478,5 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list)
     }
 
     plt::pause(0.1);
-    plt::show(); 
+    plt::show();
 }

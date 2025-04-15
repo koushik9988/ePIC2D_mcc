@@ -89,7 +89,17 @@ int main( int argc , char *argv[])
     double tolerance = INIParser::getDouble(iniData["solver"],"tolerance");
     double max_iteration = INIParser::getInt(iniData["solver"],"max_iteration");
 
-    
+
+    //plot flags
+    PlotFlags pflags;
+    pflags.phase_space = INIParser::getInt(iniData["PlotFlags"],"phase_space");
+    pflags.config_space = INIParser::getInt(iniData["PlotFlags"],"config_space");
+    pflags.electric_field = INIParser::getInt(iniData["PlotFlags"],"electric_field");
+    pflags.ke_components = INIParser::getInt(iniData["PlotFlags"],"ke_components");
+    pflags.total_energy = INIParser::getInt(iniData["PlotFlags"],"total_energy");
+    pflags.species_index = INIParser::getInt(iniData["PlotFlags"],"species_index");
+
+
     //vector to store species data
     std::vector<std::string> names;
     std::vector<double> mass;
@@ -262,15 +272,7 @@ int main( int argc , char *argv[])
     //massI,  den, save_fig, vxe, vye, vxi, vyi, domain.normscheme, domain.sub_cycle_interval);
 
     output.precision = precision;
-    //output.Energy_plot =  Energyplot_flag ;
-    //output.Potentialfield_plot = Potentialfieldplot_flag;
-    //output.Chargedensity_plot = chargeplot_flag ;
-    //output.keflag = keflag;
-    //output.peflag = peflag;
-    //output.teflag = teflag;
-    //output.phase_plot = phaseplot_flag;
-    //output.dft_flag = dft_flag;
-    //output.species_index = species_index;
+    
     output.write_metadata(nx,NUM_TS,write_interval,write_interval_phase,DT_coeff,den,save_fig,domain.normscheme,
         domain.sub_cycle_interval,LDe,LDi,wpe,wpi,species_no,0);
     output.write_species_metadata(species_list);
@@ -447,7 +449,7 @@ int main( int argc , char *argv[])
 
         if(ts%write_diagnostics == 0)
         {
-            output.diagnostics(ts,species_list);
+            output.diagnostics(ts,species_list,pflags);
         }
         
     
