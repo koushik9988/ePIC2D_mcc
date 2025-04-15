@@ -34,6 +34,8 @@ struct PlotFlags
     int ke_components;       // 1 = plot kinetic energy components, 0 = off
     int total_energy;        // 1 = plot total energy plot, 0 = off
     int species_index;       // species index for phase/config plots
+    int potential_field;
+    int density_contour;
 };
 
 

@@ -362,9 +362,9 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
 
         potential_energy_value = domain.Compute_PE(norm_species);
         
-        std::cout << " potential energy: " << std::fixed << std::setprecision(precision) << potential_energy_value;
-        std::cout << " total_energy: " << std::fixed << std::setprecision(precision) << total_kinetic_energy + potential_energy_value;
-        
+        std::cout << " Potential_energy: " << std::fixed << std::setprecision(precision) << potential_energy_value;
+        std::cout << " Kinetic_energy: " << std::fixed << std::setprecision(precision) << total_kinetic_energy;
+        std::cout << " Total_energy: " << std::fixed << std::setprecision(precision) << total_kinetic_energy + potential_energy_value;
         
         vec<double> total_momentum(3);
         for (Species& sp : species_list)
@@ -426,7 +426,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
             y.push_back(species_list[flags.species_index].part_list[i].pos[1]);
         }
 
-        plt::figure(1);
+        plt::figure(2);
         plt::clf();
         plt::scatter(x, y, 1.0);
         plt::xlabel("x");
@@ -434,6 +434,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         plt::xlim(0, domain.nx);
         plt::ylim(0, domain.ny);
     }
+
 
     // Electric Field Plot
     if (flags.electric_field == 1)
@@ -450,7 +451,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
             }
         }
 
-        plt::figure(2);
+        plt::figure(3);
         plt::clf();
         plt::quiver(X, Y, U, V);
         plt::title("Electric Field");
@@ -458,10 +459,11 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         plt::ylabel("y");
     }
 
+
     // KE Components Plot
     if (flags.ke_components == 1)
     {
-        plt::figure(3);
+        plt::figure(4);
         plt::clf();
         plt::plot(time_steps, Ke_x, {{"label", "KE_x"}, {"color", "blue"}});
         plt::plot(time_steps, Ke_y, {{"label", "KE_y"}, {"color", "red"}});
@@ -475,7 +477,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     // Total Energy Plot
     if (flags.total_energy == 1)
     {
-        plt::figure(4);
+        plt::figure(5);
         plt::clf();
         plt::plot(time_steps, kinetic_energy, {{"label", "Total Kinetic Energy"}, {"color", "blue"}});
         plt::plot(time_steps, potential_energy, {{"label", "Potential Energy"}, {"color", "red"}});
@@ -485,6 +487,58 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         plt::ylabel("Energy");
         plt::legend({{"loc", "upper right"}});
     }
+
+    
+    // Potential Field Plot (phi) using imshow
+    if (flags.potential_field == 1)
+    {
+        // Convert domain.phi to std::vector<std::vector<double>>
+        //std::vector<std::vector<double>> phi_data(domain.nx, std::vector<double>(domain.ny));
+        std::vector<std::vector<double>> phi_data(domain.ny, std::vector<double>(domain.nx));
+
+        for (int i = 0; i < domain.nx; i++)
+        {
+            for (int j = 0; j < domain.ny; j++)
+            {
+                phi_data[j][i] = domain.phi(i, j);
+            }
+        }
+
+        // Plot using imshow
+        plt::figure(6);
+        plt::clf();
+        plt::imshow(phi_data, "coolwarm", "lower","bilinear");
+        //plt::colorbar();
+        plt::title("Potential Field φ");
+        plt::xlabel("x");
+        plt::ylabel("y");
+    }
+
+    // Potential Field Plot (phi) using imshow
+    if (flags.density_contour == 1)
+    {
+        // Convert domain.phi to std::vector<std::vector<double>>
+        //std::vector<std::vector<double>> phi_data(domain.nx, std::vector<double>(domain.ny));
+        std::vector<std::vector<double>> density_data(domain.ny, std::vector<double>(domain.nx));
+
+        for (int i = 0; i < domain.nx; i++)
+        {
+            for (int j = 0; j < domain.ny; j++)
+            {
+                density_data[j][i] = species_list[flags.species_index].den(i,j);
+            }
+        }
+
+        // Plot using imshow
+        plt::figure(7);
+        plt::clf();
+        plt::imshow(density_data, "coolwarm", "lower","bilinear");
+        //plt::colorbar();
+        plt::title("Density");
+        plt::xlabel("x");
+        plt::ylabel("y");
+    }
+
 
     plt::pause(0.1);
     plt::show();

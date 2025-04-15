@@ -95,9 +95,12 @@ int main( int argc , char *argv[])
     pflags.phase_space = INIParser::getInt(iniData["PlotFlags"],"phase_space");
     pflags.config_space = INIParser::getInt(iniData["PlotFlags"],"config_space");
     pflags.electric_field = INIParser::getInt(iniData["PlotFlags"],"electric_field");
+    pflags.potential_field = INIParser::getInt(iniData["PlotFlags"],"potential_field");
     pflags.ke_components = INIParser::getInt(iniData["PlotFlags"],"ke_components");
     pflags.total_energy = INIParser::getInt(iniData["PlotFlags"],"total_energy");
     pflags.species_index = INIParser::getInt(iniData["PlotFlags"],"species_index");
+    pflags.density_contour = INIParser::getInt(iniData["PlotFlags"],"density_contour");
+    
 
 
     //vector to store species data

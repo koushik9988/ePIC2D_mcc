@@ -79,6 +79,23 @@ void Species::Push_species_serial(int sub_cycle, const std::vector<Grid*> &grids
             {
                 part.pos[1] = part.pos[1] - domain.Ly;
             }
+
+            ////
+            bool erase_particle = false;
+            for (auto grid : grids)
+            {
+                if(grid->IsGrid(part.pos[0],part.pos[1]))
+                {
+                    erase_particle = true;
+                    break;
+                }
+            }
+            if (erase_particle)
+            {
+                it = part_list.erase(it);
+                continue;
+            } 
+            ////
         }
         else if (domain.bc == "open")
         {
@@ -129,6 +146,23 @@ void Species::Push_species_serial(int sub_cycle, const std::vector<Grid*> &grids
                 part.pos[1] = domain.x0 + domain.Ly - (part.pos[1] - (domain.x0 + domain.Ly));
                 part.vel[1] = -part.vel[1]; // Reflect velocity
             }
+
+            ////
+            bool erase_particle = false;
+            for (auto grid : grids)
+            {
+                if(grid->IsGrid(part.pos[0],part.pos[1]))
+                {
+                    erase_particle = true;
+                    break;
+                }
+            }
+            if (erase_particle)
+            {
+                it = part_list.erase(it);
+                continue;
+            } 
+            ////
 
         }
         it++; // Increment iterator
