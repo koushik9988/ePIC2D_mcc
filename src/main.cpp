@@ -483,6 +483,11 @@ int main( int argc , char *argv[])
 
     output.write_ke();
     //output.write_m();
+
+    for(auto &grid : grids)
+    {
+        delete grid;
+    }
     
     auto end_time = std::chrono::high_resolution_clock::now();
 
