@@ -29,7 +29,7 @@ int main( int argc , char *argv[])
       exit (EXIT_FAILURE);
     }
 
-    print("---------------------------------1D Electrostatic Particle In Cell code-------------------------------------");
+    //print("---------------------------------1D Electrostatic Particle In Cell code-------------------------------------");
     //parsing input.ini file and storing values
     const std::string filename = argv[1];
     
@@ -231,11 +231,7 @@ int main( int argc , char *argv[])
     domain.species_no = species_no;
     domain.density = den;
     domain.shapefunction = shapefunction;
-    domain.IAW_vel = CS;
-    //domain.num_threads = num_threads;
-    //domain.push_parallal = string_to_bool(push_parallal);
-    //domain.deposit_parallal = string_to_bool(deposit_parallal);
-    //domain.pload = pload;  
+    domain.IAW_vel = CS;  
     domain.max_iteration = max_iteration;
     domain.normscheme = norm_scheme;
     domain.sub_cycle_interval = sub_cycle_interval;
@@ -328,29 +324,6 @@ int main( int argc , char *argv[])
         }
 
     }
-    /*std::vector<Grid*> grids;
-
-    for (const auto& [section_name, params] : iniData) 
-    {
-        if (section_name.rfind("grid_", 0) == 0)  // section starts with grid_
-        {
-            std::string type = INIParser::getString(params, "type");
-
-            if (type == "circular")
-            {
-                GridParams grid_params;
-                grid_params.grid_centerx     = INIParser::getInt(params, "x_center");
-                grid_params.grid_centery     = INIParser::getInt(params, "y_center");
-                grid_params.num_electrodes   = INIParser::getInt(params, "electrode_number");
-                grid_params.grid_rad         = INIParser::getDouble(params, "grid_radius");
-                grid_params.electrode_rad    = INIParser::getDouble(params, "electrod_radius");
-                grid_params.voltage          = (Const::eV/(Const::K_b*Const::EV_to_K))*INIParser::getDouble(params, "electrode_voltage");
-
-                grids.push_back(Create_Grid(GridType::Circular, domain, grid_params));
-            }
-        }
-    }
-    */
     //---grid initialization------------------
 
 

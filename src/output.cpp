@@ -377,8 +377,8 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
             std::cout << " p_x: " << std::fixed << std::setprecision(precision) << total_momentum(0);
             std::cout << " p_y: " << std::fixed << std::setprecision(precision) << total_momentum(1);
             std::cout << " p_z: " << std::fixed << std::setprecision(precision) << total_momentum(2);
-            std::cout << " p: " << std::fixed << std::setprecision(precision) 
-        << sqrt(total_momentum(0)*total_momentum(0) + total_momentum(1)*total_momentum(1) + total_momentum(2)*total_momentum(2));
+            //std::cout << " p: " << std::fixed << std::setprecision(precision) 
+        //<< sqrt(total_momentum(0)*total_momentum(0) + total_momentum(1)*total_momentum(1) + total_momentum(2)*total_momentum(2));
         }
         
         // Energy history store
@@ -396,21 +396,23 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
     plt::ion();
 
     // Phase Space Plot (x vs vx)
-    if (flags.phase_space == 1 && flags.species_index < species_list.size())
+    if ((flags.phase_space == 1 || flags.phase_space == 2) && flags.species_index < species_list.size())
     {
         std::vector<double> x, vx;
         int N = species_list[flags.species_index].part_list.size();
         for (int i = 0; i < N; ++i)
         {
-            x.push_back(species_list[flags.species_index].part_list[i].pos[0]);
-            vx.push_back(species_list[flags.species_index].part_list[i].vel[0]);
+            (flags.phase_space == 1) ? x.push_back(species_list[flags.species_index].part_list[i].pos[0]):
+            x.push_back(species_list[flags.species_index].part_list[i].pos[1]);
+            (flags.phase_space == 1) ? vx.push_back(species_list[flags.species_index].part_list[i].vel[0]):
+            vx.push_back(species_list[flags.species_index].part_list[i].vel[1]);
         }
 
         plt::figure(1);
         plt::clf();
         plt::scatter(x, vx, 1.0);
-        plt::xlabel("x");
-        plt::ylabel("vx");
+        (flags.phase_space == 1) ? plt::xlabel("x"): plt::xlabel("y");
+        (flags.phase_space == 1) ? plt::ylabel("vx"): plt::ylabel("vy");
         //plt::xlim(0, domain.nx);
         //plt::ylim(0, domain.ny);
     }
@@ -428,7 +430,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
 
         plt::figure(2);
         plt::clf();
-        plt::scatter(x, y, 1.0);
+        plt::scatter(x, y, 10.0);
         plt::xlabel("x");
         plt::ylabel("y");
         plt::xlim(0, domain.nx);
@@ -437,29 +439,31 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
 
 
     // Electric Field Plot
-    if (flags.electric_field == 1)
+    if (flags.electric_field == 1 || flags.electric_field == 2)
     {
-        std::vector<double> X, Y, U, V;
+        // Convert domain.efx to std::vector<std::vector<double>>
+        //std::vector<std::vector<double>> phi_data(domain.nx, std::vector<double>(domain.ny));
+        std::vector<std::vector<double>> efield_data(domain.ny, std::vector<double>(domain.nx));
+
         for (int i = 0; i < domain.nx; i++)
         {
             for (int j = 0; j < domain.ny; j++)
             {
-                X.push_back(i * domain.dx);
-                Y.push_back(j * domain.dy);
-                U.push_back(domain.efx(i, j));
-                V.push_back(domain.efy(i, j));
+                efield_data[j][i] = (flags.electric_field == 1) ? domain.efx(i, j) : domain.efy(i, j);
             }
         }
 
+        // Plot using imshow
         plt::figure(3);
         plt::clf();
-        plt::quiver(X, Y, U, V);
-        plt::title("Electric Field");
+        plt::imshow(efield_data, "coolwarm", "lower","bilinear");
+        //plt::colorbar();
+        (flags.electric_field == 1) ? plt::title("Electric Field E_x") : plt::title("Electric Field E_y");
+        //plt::title("Electric Field E");
         plt::xlabel("x");
         plt::ylabel("y");
     }
-
-
+    
     // KE Components Plot
     if (flags.ke_components == 1)
     {
@@ -514,7 +518,7 @@ void Output::diagnostics(int ts, std::vector<Species> &species_list, const PlotF
         plt::ylabel("y");
     }
 
-    // Potential Field Plot (phi) using imshow
+    // density contour plot
     if (flags.density_contour == 1)
     {
         // Convert domain.phi to std::vector<std::vector<double>>
