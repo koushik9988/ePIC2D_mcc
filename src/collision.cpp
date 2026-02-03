@@ -177,7 +177,10 @@ void CollisionHandler::collision_electron(double xe, double ye, double &vxe, dou
         // Ionization
         energy = 0.5 * Const::ME * g * g * domain.vel_norm * domain.vel_norm;
         energy = fabs(energy - E_ION_TH * Const::eV);
-        e_ej = 10.0 * tan(rnd() * atan(energy / Const::eV / 20.0)) * Const::eV;
+        // Shape factor w: Argon w=10 => 2w=20, Hydrogen w=8.3 => 2w=16.6
+        const double shape_w = (gas == HYDROGEN) ? HYDROGEN_SHAPE_W : ARGON_SHAPE_W;
+        const double shape_2w = 2.0 * shape_w;
+        e_ej = 10.0 * tan(rnd() * atan(energy / Const::eV / shape_2w)) * Const::eV;
         e_sc = fabs(energy - e_ej);
         g = sqrt(2.0 * e_sc / Const::ME);
         g2 = sqrt(2.0 * e_ej / Const::ME);

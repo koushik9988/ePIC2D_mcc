@@ -19,6 +19,10 @@
 #define ARGON 0
 #define HYDROGEN 1
 
+// Gas-dependent parameters
+constexpr double ARGON_SHAPE_W = 10.0;
+constexpr double HYDROGEN_SHAPE_W = 8.3;
+
 constexpr int CS_RANGES = 2000000; // CS_RANGES is a compile-time constant
 constexpr double DE_CS = 0.005;
 using cross_section = std::vector<double>;
